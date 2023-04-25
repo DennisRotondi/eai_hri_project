@@ -46,12 +46,15 @@
                     <button type="button" id="conferma" class="btn btn-outline-primary">thank the robot</button>
                 </div>
             </div> -->
-            <h4>Ask something</h4>
+            <h4>Ask something like</h4>
             <div class="row">
-                <div class="btn-group mt-1" role="group" aria-label="Basic outlined example" id="objects">
-                    <button type="button" id="can" class="btn btn-outline-primary">throw a can</button>
-                    <button type="button" id="bottle" class="btn btn-outline-primary">throw a bottle</button>
-                    <button type="button" id="pouch" class="btn btn-outline-primary">weight a pouch</button>
+                <div class="btn-group mt-1 mb-1 btn-matrix" role="group" aria-label="Basic outlined example" id="objects">
+                    <button type="button" id="throw can" class="btn btn-outline-primary">throw a can</button>
+                    <button type="button" id="throw bottle" class="btn btn-outline-primary">throw a bottle</button>
+                    <button type="button" id="throw pouch" class="btn btn-outline-primary">weight a pouch</button>
+                    <button type="button" id="take picture" class="btn btn-outline-primary">take a picture</button>
+                    <button type="button" id="count cans" class="btn btn-outline-primary">count how many cans</button>
+                    <button type="button" id="count objects" class="btn btn-outline-primary">count how many objects</button>
                 </div>
                 <div class="row justify-content-md-center">
                     <div class="col-md-auto">
@@ -74,7 +77,14 @@
             <div class="row mt-1">
                 <div class="mb-3">
                     <h4>Web Logger:</h4>
-                    <textarea class="form-control" disabled id="output" rows="15"></textarea>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <textarea class="form-control" disabled id="output" rows="19"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="canvas_img" class="img-responsive" width="633" height="470"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

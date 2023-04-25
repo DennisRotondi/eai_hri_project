@@ -3,7 +3,7 @@ var utente;
 var ros;
 var pub_text;
 var sub_text;
-
+var sub_img;
 const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
 const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
 
@@ -124,9 +124,31 @@ function setup_ros() {
         messageType: 'std_msgs/String'
     });
 
-    sub_text.subscribe(function (text) {
-        log(text.data);
+    sub_img = new ROSLIB.Topic({
+        ros : ros,
+        name : '/camera/rgb/image_raw_3',
+        messageType : 'sensor_msgs/CompressedImage'
     });
+
+    sub_text.subscribe(function (text) {
+        log("Robot: "+text.data);
+    });
+    
+    // Define a callback function to handle the incoming image data
+    sub_img.subscribe(function(msg) {
+        var img = new Image();
+        img.src = "data:image/jpeg;base64," + msg.data;
+
+        // When the image is loaded, draw it on a canvas element
+        img.onload = function() {
+            // Create a canvas element and set its dimensions to match the image
+            var canvas = document.getElementById('canvas_img');    
+            // Get the 2D context of the canvas and draw the image on it
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+        }
+    });
+    
 }
 
 function setup_recognition() {
@@ -135,8 +157,8 @@ function setup_recognition() {
     speechRecognitionList = new SpeechGrammarList();
     speechRecognitionList.addFromString(grammar, 1);
     recognition.grammars = speechRecognitionList;
-    recognition.lang = 'it-IT';
-    // recognition.lang = 'en-US';
+    // recognition.lang = 'it-IT';
+    recognition.lang = 'en-US';
     recognition.interimResults = false;
 
     recognition.onresult = function (event) {
@@ -155,6 +177,8 @@ function setup_recognition() {
     }
 }
 
+ip = "192.168.1.57" // or location.hostname
+
 $(document).ready(() => {
 
     $("#login").on('click', () => {
@@ -171,8 +195,8 @@ $(document).ready(() => {
 
         setup_recognition();
         // here we assume that the rosbrige is on our machine
-        // otherwise is enough to change the location.hostname
-        websocket = "ws://" + location.hostname + ":9090"; //to have a url
+        // otherwise is enough to change the ip
+        websocket = "ws://" + ip + ":9090"; //to have a url
         setup_ros(); //connect to ros
     });
 
@@ -185,7 +209,7 @@ $(document).ready(() => {
         console.log(event.target);
         var obj = $(event.target).attr("id");
         var action = $(event.target).text();
-        log("Robot: Ok so you want me to " + action);
+        log("Robot: ok so you want me to " + action);
         pub_msg(obj);
     });
 

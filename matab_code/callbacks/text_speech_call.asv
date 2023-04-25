@@ -1,0 +1,19 @@
+function text_speech_call(obj, msg, vararg)
+    global network
+    % here we need to understand what the person said
+    str = msg.Data;
+    if contains(str,"take") && contains(str,"picture")
+        send_picture(take_picture);
+    elseif contains(str,"count")
+        img = take_picture
+        [bboxes,~,labels] = detect(network,img);
+        
+        for el = {'can','bottle', 'pouch'}
+            if contains(str,el)
+                idxs = labels == el;
+                send_piture(insertObjectAnnotation(img,"rectangle",bboxes(idxs),labels(idxs)));
+                send_log("there are "+sum(idxs)+"!!")
+            end
+        end
+    end
+end

@@ -1,3 +1,0 @@
-string sender
-string speechtext
-
