@@ -56,22 +56,32 @@
                     <button type="button" id="count cans" class="btn btn-outline-primary">count how many cans</button>
                     <button type="button" id="count objects" class="btn btn-outline-primary">count how many objects</button>
                 </div>
-                <div class="row justify-content-md-center">
-                    <div class="col-md-auto">
-                        <button type="button" class="btn btn-outline-danger" id="speak">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                class="bi bi-mic" viewBox="0 0 16 16">
-                                <path
-                                    d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z">
-                                </path>
-                                <path
-                                    d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z">
-                                </path>
-                            </svg>
-                            spoken instruction
-                        </button>
-                    </div>
-                </div>
+                <div class="d-flex justify-content-center" id="movements">
+                    <button type="button" id="move ahead" class="btn btn-dark">x+</button>
+                    <button type="button" id="move back" class="btn btn-light">x-</button>
+                    <button type="button" id="move right" class="btn btn-dark">y+</button>
+                    <button type="button" id="move left" class="btn btn-light">y-</button>
+                    <button type="button" id="move up" class="btn btn-dark">z+</button>
+                    <button type="button" id="move down" class="btn btn-light">z-</button>
+                    <button type="button" class="btn btn-outline-danger ml-3 mx-3" id="speak">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-mic" viewBox="0 0 16 16">
+                            <path
+                                d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z">
+                            </path>
+                            <path
+                                d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z">
+                            </path>
+                        </svg>
+                        spoken instruction
+                    </button>
+                    <button type="button" id="rotate roll" class="btn btn-dark">a+</button>
+                    <button type="button" id="rotate inverse roll" class="btn btn-light">a-</button>
+                    <button type="button" id="rotate pitch" class="btn btn-dark">b+</button>
+                    <button type="button" id="rotate inverse pitch" class="btn btn-light">b-</button>
+                    <button type="button" id="rotate yaw" class="btn btn-dark">c+</button>
+                    <button type="button" id="toate inverse yaw" class="btn btn-light">c-</button>
+                </div>                
             </div>
             <!-- logger online -->
             <div class="row mt-1">

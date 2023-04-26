@@ -177,6 +177,7 @@ function setup_recognition() {
     }
 }
 
+//ip = "10.10.247.106"
 ip = "192.168.1.57" // or location.hostname
 
 $(document).ready(() => {
@@ -210,6 +211,15 @@ $(document).ready(() => {
         var obj = $(event.target).attr("id");
         var action = $(event.target).text();
         log("Robot: ok so you want me to " + action);
+        pub_msg(obj);
+    });
+
+    $("#movements").on('click', (event) => {
+        console.log(event.target);
+        var obj = $(event.target).attr("id");
+        if(obj === "speak")
+            return
+        log("Robot: ok so you want me to " + obj);
         pub_msg(obj);
     });
 
