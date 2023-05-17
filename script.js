@@ -139,7 +139,10 @@ $(document).ready(() => {
         //     alert("insert name and password");
         //     return;
         // }
-        $("#welcome").html("Hello " + nome);
+        if (["dennis:30","marco:10","fabio:20"].includes(nome.toLowerCase()+":"+pw))
+            $("#welcome").html("Welcome back " + nome);
+        else
+            $("#welcome").html("Welcome " + nome);
         utente = nome + ":" + pw;
         $("#persona").addClass("invisibile");
         $("#controllo").removeClass("invisibile");
