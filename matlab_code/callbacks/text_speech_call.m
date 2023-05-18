@@ -15,7 +15,7 @@ function text_speech_call(obj, msg, vararg)
         % disp("here0")
         send_picture(take_picture);
         send_log("done, I'm available for a new instruction!");
-    elseif contains(str,"move") || contains(str,"go") || contains(str,"rotate")
+    elseif contains(str,"move") || contains(str,"rotate")
         % disp("here1")
         if contains(str,"forward") || contains(str,"ahead")
             move("x+");
