@@ -142,7 +142,7 @@ $(document).ready(() => {
         if (["dennis:30","marco:10","fabio:20"].includes(nome.toLowerCase()+":"+pw))
             $("#welcome").html("Welcome back " + nome);
         else
-            $("#welcome").html("Welcome " + nome);
+            $("#welcome").html("Welcome " + nome+", first time here?");
         utente = nome + ":" + pw;
         $("#persona").addClass("invisibile");
         $("#controllo").removeClass("invisibile");
@@ -178,14 +178,16 @@ $(document).ready(() => {
         pub_msg(obj);
     });
 
-    // $("#conferma").on('click', (event) => {
-    //     var conferma = new ROSLIB.Message({
-    //         data: utente
-    //     });
-    //     pub_conferma.publish(conferma);
-    // });
-
-    // $("#chiama").on('click', (event) => {
-    //     send_obiettivo(stanza_corrente);
-    // });
+    $("#input_text").keypress(function(event) {
+        // console.log(event);
+        // log("me",event.keyCode);
+        var key = (event.keyCode ? event.keyCode : event.which);
+        if (key === 13 || key === 'Enter') {
+            event.preventDefault();
+            msg = $("#input_text").val();
+            $("#input_text").val('');
+            log(utente.split(":")[0]+": ",msg);
+            pub_msg(msg);
+        }
+     });
 });
