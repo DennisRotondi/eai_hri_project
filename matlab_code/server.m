@@ -5,7 +5,7 @@ rosIP = "192.168.1.57";  %"192.168.1.57"; 10.10.247.106 %
 init_ros;
 load_models;
 
-global rgbImgSub logger_pub network rgbImgPub jointPub tftree status depthImgSub
+global rgbImgSub logger_pub network rgbImgPub jointPub tftree status depthImgSub text_speech
 
 status = "available";
 tftree = rostf;

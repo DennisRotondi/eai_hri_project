@@ -1,11 +1,13 @@
 function text_speech_call(obj, msg, vararg)
-    global network status
+    global network status text_speech
     % here we need to understand what the person said
     str = msg.Data;
     disp(str);
     % disp("hello");
     if status == "busy"
-        send_log("but I'm sorry to say that I'm busy completing a previous command, wait a moment please")
+        send_log("I'm sorry to say that I'm busy completing a previous command, wait a moment please")
+        return
+    elseif status == "waiting"
         return
     end
     status = "busy";
@@ -88,7 +90,29 @@ function text_speech_call(obj, msg, vararg)
             status = "available";
             return
         end
-        bbox = bboxes(1,:);
+        status = "waiting";
+        confirm = false;
+        for i=1:size(bboxes(:,1))
+            send_log("there are more than one, is this one?")
+            send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
+            msg = receive(text_speech,2000);
+            if contains(msg.Data,"yes")
+                confirm = true;
+                break
+            elseif contains(msg.Data,"no")
+                continue
+            else
+                send_log("sorry but you didn't confirm correctly")
+                status = "available";
+                return
+            end
+        end
+        if ~confirm
+            send_log("sorry but I don't see another "+obj)
+            status = "available";
+            return
+        end
+        bbox = bboxes(i,:);
         ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
         p_link0 = reproject(ctr_img, depth);
         complete_task(obj,p_link0,"throw");
@@ -104,13 +128,34 @@ function text_speech_call(obj, msg, vararg)
             status = "available";
             return
         end
-        bbox = bboxes(1,:);
+        status = "waiting";
+        confirm = false;
+        for i=1:size(bboxes(:,1))
+            send_log("there are more than one, is this one?")
+            send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
+            msg = receive(text_speech,2000);
+            if contains(msg.Data,"yes")
+                confirm = true;
+                break
+            elseif contains(msg.Data,"no")
+                continue
+            else
+                send_log("sorry but you didn't confirm correctly")
+                status = "available";
+                return
+            end
+        end
+        if ~confirm
+            send_log("sorry but I don't see another "+obj)
+            status = "available";
+            return
+        end
+        bbox = bboxes(i,:);
         ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
         p_link0 = reproject(ctr_img, depth);
         complete_task(obj,p_link0,"weight")
     else
         disp("I didn't get your instruction, sorry!");       
     end
-
     status = "available";
 end
