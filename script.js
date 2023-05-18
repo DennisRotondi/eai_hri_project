@@ -106,7 +106,7 @@ function setup_recognition() {
     recognition.onresult = function (event) {
         var last = event.results.length - 1;
         var command = event.results[last][0].transcript.toLowerCase();
-        log(utente.split(":")[0] + ": ", command);
+        log(utente, command);
         pub_msg(command);
     };
 
@@ -143,7 +143,7 @@ $(document).ready(() => {
             $("#welcome").html("Welcome back " + nome);
         else
             $("#welcome").html("Welcome " + nome+", first time here?");
-        utente = nome + ":" + pw;
+        utente = nome + ": ";
         $("#persona").addClass("invisibile");
         $("#controllo").removeClass("invisibile");
 
@@ -164,6 +164,7 @@ $(document).ready(() => {
         console.log(event.target);
         var obj = $(event.target).attr("id");
         var action = $(event.target).text();
+        // log("Robot: ", "ok so you want me to " + action);
         log("Robot: ", "ok so you want me to " + action);
         pub_msg(obj);
     });
@@ -173,6 +174,7 @@ $(document).ready(() => {
         var obj = $(event.target).attr("id");
         if(obj === "speak")
             return
+        // log("Robot: ", "ok so you want me to " + obj);
         log("Robot: ", "ok so you want me to " + obj);
 
         pub_msg(obj);
@@ -186,7 +188,7 @@ $(document).ready(() => {
             event.preventDefault();
             msg = $("#input_text").val();
             $("#input_text").val('');
-            log(utente.split(":")[0]+": ",msg);
+            log(utente,msg);
             pub_msg(msg);
         }
      });
