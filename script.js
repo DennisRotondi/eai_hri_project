@@ -139,7 +139,7 @@ $(document).ready(() => {
         //     alert("insert name and password");
         //     return;
         // }
-        if (["dennis:30","marco:10","fabio:20"].includes(nome.toLowerCase()+":"+pw))
+        if (["dennis:333","marco:111","fabio:222"].includes(nome.toLowerCase()+":"+pw))
             $("#welcome").html("Welcome back " + nome);
         else
             $("#welcome").html("Welcome " + nome+", first time here?");
@@ -165,7 +165,7 @@ $(document).ready(() => {
         var obj = $(event.target).attr("id");
         var action = $(event.target).text();
         // log("Robot: ", "ok so you want me to " + action);
-        log("Robot: ", "ok so you want me to " + action);
+        log(utente, action);
         pub_msg(obj);
     });
 
@@ -175,7 +175,7 @@ $(document).ready(() => {
         if(obj === "speak")
             return
         // log("Robot: ", "ok so you want me to " + obj);
-        log("Robot: ", "ok so you want me to " + obj);
+        log(utente, obj);
 
         pub_msg(obj);
     });

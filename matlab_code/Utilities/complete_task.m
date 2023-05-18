@@ -49,7 +49,7 @@ function idx = find_nearest(list,target,type)
     current_best = 1e9;
     for i=1:size(list)
         tmp = norm(target'-list(i,1:3)');
-        if tmp < current_best && type == types(i)
+        if tmp < current_best && (type == types(i) || type == "pouch")
             current_best = tmp;
             idx = i;
         end

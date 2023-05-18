@@ -12,10 +12,11 @@ function text_speech_call(obj, msg, vararg)
     end
     status = "busy";
     if contains(str,"take") && (contains(str,"picture") || contains(str,"photo"))
-        disp("here0")
+        % disp("here0")
         send_picture(take_picture);
+        send_log("done, I'm available for a new instruction!");
     elseif contains(str,"move") || contains(str,"go") || contains(str,"rotate")
-        disp("here1")
+        % disp("here1")
         if contains(str,"forward") || contains(str,"ahead")
             move("x+");
         elseif contains(str,"backward") || contains(str,"back")
@@ -42,6 +43,7 @@ function text_speech_call(obj, msg, vararg)
         elseif contains(str,"yaw")
             move("c+");
         end
+        send_log("done, I'm available for a new instruction!");
     elseif contains(str,"count") || contains(str,"how many")
         % disp("here2")
         img = take_picture;
@@ -90,32 +92,38 @@ function text_speech_call(obj, msg, vararg)
             status = "available";
             return
         end
-        status = "waiting";
-        confirm = false;
-        for i=1:size(bboxes(:,1))
-            send_log("there are more than one, is this one?")
-            send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
-            msg = receive(text_speech,2000);
-            if contains(msg.Data,"yes")
-                confirm = true;
-                break
-            elseif contains(msg.Data,"no")
-                continue
-            else
-                send_log("sorry but you didn't confirm correctly")
+        
+        i = 1;
+        if length(bboxes(:,1))>1
+            status = "waiting";
+            confirm = false;
+            for i=1:length(bboxes(:,1))
+                send_log("there are more than one, is this one?")
+                send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
+                msg = receive(text_speech,2000);
+                if contains(msg.Data,"yes")
+                    confirm = true;
+                    break
+                elseif contains(msg.Data,"no")
+                    continue
+                else
+                    send_log("sorry but you didn't confirm correctly")
+                    status = "available";
+                    return
+                end
+            end
+            if ~confirm
+                send_log("sorry but I don't see another "+obj)
                 status = "available";
                 return
             end
         end
-        if ~confirm
-            send_log("sorry but I don't see another "+obj)
-            status = "available";
-            return
-        end
         bbox = bboxes(i,:);
         ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
         p_link0 = reproject(ctr_img, depth);
+        status = "busy";
         complete_task(obj,p_link0,"throw");
+        send_log("done, I'm available for a new instruction!");
     elseif contains(str,"weight") && contains(str,"pouch")
         obj = "pouch";
         img = take_picture;
@@ -128,34 +136,41 @@ function text_speech_call(obj, msg, vararg)
             status = "available";
             return
         end
-        status = "waiting";
-        confirm = false;
-        for i=1:size(bboxes(:,1))
-            send_log("there are more than one, is this one?")
-            send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
-            msg = receive(text_speech,2000);
-            if contains(msg.Data,"yes")
-                confirm = true;
-                break
-            elseif contains(msg.Data,"no")
-                continue
-            else
-                send_log("sorry but you didn't confirm correctly")
+        
+        i = 1;
+        disp(length(bboxes(:,1)));
+        if length(bboxes(:,1))>1
+            status = "waiting";
+            confirm = false;
+            for i=1:length(bboxes(:,1))
+                send_log("there are more than one, is this one?")
+                send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
+                msg = receive(text_speech,2000);
+                if contains(msg.Data,"yes")
+                    confirm = true;
+                    break
+                elseif contains(msg.Data,"no")
+                    continue
+                else
+                    send_log("sorry but you didn't confirm correctly")
+                    status = "available";
+                    return
+                end
+            end
+            if ~confirm
+                send_log("sorry but I don't see another "+obj)
                 status = "available";
                 return
             end
         end
-        if ~confirm
-            send_log("sorry but I don't see another "+obj)
-            status = "available";
-            return
-        end
         bbox = bboxes(i,:);
         ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
         p_link0 = reproject(ctr_img, depth);
+        status = "busy";
         complete_task(obj,p_link0,"weight")
+        send_log("done, I'm available for a new instruction!");
     else
-        disp("I didn't get your instruction, sorry!");       
+        send_log("I didn't get your instruction, sorry!");       
     end
     status = "available";
 end

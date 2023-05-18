@@ -25,6 +25,6 @@ function move(direction, lin_off,ang_off)
     rot_diff = eul2rotm(ang_off*posid(4:6),"XYZ");
     angle_final = rotm2eul(rota*rot_diff,"XYZ");
     trans_final = transla + tran_diff;
-    moveTo([trans_final angle_final]);
+    moveTo([trans_final angle_final],1,true);
 end
 
