@@ -158,7 +158,7 @@ function text_speech_call(obj, msg, vararg)
 end
 
 function log_random_answer(type)
-    persistent complete busy dict
+    persistent complete busy dict nosee multiple noinst
     if isempty(complete)
         busy = {'I apologize for the delay, I am currently tied up with a previous task. Please give me a moment.',...
         'Please bear with me, I am still processing an earlier command. Your patience is appreciated.',...
@@ -243,12 +243,16 @@ function log_random_answer(type)
         'My apologies, but your instruction did not resonate with me.',...
         'I am sorry, but I could not make sense of your command.',...
         'Apologies, but I failed to catch your instruction.'};
-
-    dict = dictionary(["busy","complete", "nosee","multiple", "noinst"], [busy, complete, nosee, multiple, noinst]);
+    keys = ["busy","complete", "nosee","multiple", "noinst"];
+    values = {busy, complete, nosee, multiple, noinst};
+    dict = containers.Map(keys, values);
     end
     val = dict(type);
-    size_ = size(type);
-    send_log(val{randi([0,size_(2)],1,1)});
+    size_ = size(val,2);
+    idx = randi([1,size_],1,1);
+    sentence = val{idx};
+    disp(sentence);
+    send_log(sentence);
 end
 
 function log_count(x)
@@ -275,11 +279,12 @@ function log_count(x)
         'According to my view, the number stands at x.',...
         'Based on my perception, I would say there are x.'};
     end
-    size_ = size(template);
-    sentence = template{randi([0,size_(2)],1,1)};
+    size_ = size(template,2);
+    sentence = template{randi([1,size_],1,1)};
     sentence = strrep(sentence, 'x', num2str(x));
-    if size_(2) == 1
+    if x == 1
         sentence = strrep(sentence, 'are', "is");
     end
+    disp(sentence);
     send_log(sentence);
 end
