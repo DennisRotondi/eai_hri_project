@@ -5,16 +5,21 @@ function text_speech_call(obj, msg, vararg)
     disp(str);
     % disp("hello");
     if status == "busy"
-        send_log("I'm sorry to say that I'm busy completing a previous command, wait a moment please")
+        log_random_answer("busy");
         return
     elseif status == "waiting"
         return
     end
     status = "busy";
-    if contains(str,"take") && (contains(str,"picture") || contains(str,"photo"))
+    % --- do not ---
+    if contains(str,"don't") || contains(str,"do not")
+        send_log("Ok, I won't.");
+    % --- picture ---
+    elseif contains(str,"take") && (contains(str,"picture") || contains(str,"photo"))
         % disp("here0")
         send_picture(take_picture);
-        send_log("done, I'm available for a new instruction!");
+        log_random_answer("complete");
+    % --- move ---
     elseif contains(str,"move") || contains(str,"rotate")
         % disp("here1")
         if contains(str,"forward") || contains(str,"ahead")
@@ -43,7 +48,8 @@ function text_speech_call(obj, msg, vararg)
         elseif contains(str,"yaw")
             move("c+");
         end
-        send_log("done, I'm available for a new instruction!");
+        log_random_answer("complete");
+    % --- count ---
     elseif contains(str,"count") || contains(str,"how many")
         % disp("here2")
         img = take_picture;
@@ -64,41 +70,52 @@ function text_speech_call(obj, msg, vararg)
             send_picture(img);
             idxs = 0;
         end
-        if sum(idxs) == 1
-            log_msg = 'there is '+string(sum(idxs))+'!!';
-        else
-            log_msg = 'there are '+string(sum(idxs))+'!!';
+        log_count(sum(idxs));
+    % --- throw / weight ---
+    elseif contains(str,"recycle") || contains(str,"throw") || contains(str,"take") || (contains(str,"weight") && contains(str,"pouch"))
+        all_flag = false; objects = false; random = false;
+        if contains(str,"all") 
+            all_flag = true;
         end
-        send_log(string(log_msg))
-    elseif contains(str,"recycle") || contains(str,"throw") || contains(str,"take")
+        if contains(str,"random") || contains(str,"randomly") || contains(str,"choose")
+            random = true;
+        end
         if contains(str,"can") 
             obj = "can";
         elseif contains(str,"bottle") 
             obj = "bottle";
         elseif contains(str,"pouch") 
             obj = "pouch";
+        elseif contains(str,"object") 
+            objects = true;
         else
-            send_log("sorry I don't see that object, try moving me around!");
+            log_random_answer("nosee");
             status = "available";
             return
         end
         img = take_picture;
         depth = take_depth_picture;
         [bboxes,~,labels] = detect(network,img);
-        idxs = labels == obj;
-        bboxes = bboxes(idxs,:);
+        if ~objects
+            idxs = labels == obj;
+            bboxes = bboxes(idxs,:);
+        end
         if isempty(bboxes)
-            send_log("sorry I don't see any "+obj+" here, try moving me around!");
+            log_random_answer("nosee");
             status = "available";
             return
         end
         
         i = 1;
-        if length(bboxes(:,1))>1
+        if all_flag
+            i = 1:length(bboxes(:,1));
+        elseif random
+            i = randi(length(bboxes(:,1)));
+        elseif length(bboxes(:,1))>1 
             status = "waiting";
             confirm = false;
             for i=1:length(bboxes(:,1))
-                send_log("there are more than one, is this one?")
+                log_random_answer("multiple");
                 send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
                 msg = receive(text_speech,2000);
                 if contains(msg.Data,"yes")
@@ -106,71 +123,163 @@ function text_speech_call(obj, msg, vararg)
                     break
                 elseif contains(msg.Data,"no")
                     continue
-                else
-                    send_log("sorry but you didn't confirm correctly")
-                    status = "available";
-                    return
-                end
-            end
-            if ~confirm
-                send_log("sorry but I don't see another "+obj)
-                status = "available";
-                return
-            end
-        end
-        bbox = bboxes(i,:);
-        ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
-        p_link0 = reproject(ctr_img, depth);
-        status = "busy";
-        complete_task(obj,p_link0,"throw");
-        send_log("done, I'm available for a new instruction!");
-    elseif contains(str,"weight") && contains(str,"pouch")
-        obj = "pouch";
-        img = take_picture;
-        depth = take_depth_picture;
-        [bboxes,~,labels] = detect(network,img);
-        idxs = labels == obj;
-        bboxes = bboxes(idxs,:);
-        if isempty(bboxes)
-            send_log("sorry, I don't see any pouch here, try moving me around!");
-            status = "available";
-            return
-        end
-        
-        i = 1;
-        disp(length(bboxes(:,1)));
-        if length(bboxes(:,1))>1
-            status = "waiting";
-            confirm = false;
-            for i=1:length(bboxes(:,1))
-                send_log("there are more than one, is this one?")
-                send_picture(insertObjectAnnotation(img,"rectangle",bboxes(i,:),obj));
-                msg = receive(text_speech,2000);
-                if contains(msg.Data,"yes")
+                elseif contains(msg.Data,"random") || contains(msg.Data,"randomly") || contains(msg.Data,"choose")
+                    i = randi(length(bboxes(:,1)));
                     confirm = true;
                     break
-                elseif contains(msg.Data,"no")
-                    continue
                 else
-                    send_log("sorry but you didn't confirm correctly")
+                    send_log("Sorry but you didn't confirm correctly.")
                     status = "available";
                     return
                 end
             end
             if ~confirm
-                send_log("sorry but I don't see another "+obj)
+                send_log("Sorry but I don't see another "+obj+".")
                 status = "available";
                 return
             end
         end
-        bbox = bboxes(i,:);
-        ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
-        p_link0 = reproject(ctr_img, depth);
-        status = "busy";
-        complete_task(obj,p_link0,"weight")
-        send_log("done, I'm available for a new instruction!");
+        for j = i
+            bbox = bboxes(j,:);
+            ctr_img = round([bbox(1) + bbox(3)/2; bbox(2) + bbox(4)/2]);
+            p_link0 = reproject(ctr_img, depth);
+            status = "busy";
+            if contains(str,"weight")
+                complete_task(obj,p_link0,"weight")
+            else
+                complete_task(obj,p_link0,"throw");
+            end
+        end
+        log_random_answer("complete");
     else
-        send_log("I didn't get your instruction, sorry!");       
+        log_random_answer("noinst");
     end
     status = "available";
+end
+
+function log_random_answer(type)
+    persistent complete busy dict
+    if isempty(complete)
+        busy = {'I apologize for the delay, I am currently tied up with a previous task. Please give me a moment.',...
+        'Please bear with me, I am still processing an earlier command. Your patience is appreciated.',...
+        'Regrettably, I am occupied with an earlier instruction. Could you kindly wait for a moment?',...
+        'Unfortunately, I am currently engaged with a prior command. I will be with you shortly, thank you for your patience.',...
+        'Pardon the wait, I am working on a previous task at the moment. Your understanding is appreciated.',...
+        'I am in the middle of handling a prior command, so I will need a moment. Thanks for your patience.',...
+        'I am still wrapping up a previous command. Could you hold on for a moment, please?',...
+        'I am occupied finishing a prior task right now, I appreciate your patience.',...
+        'My apologies for the holdup, I am currently busy with a previous task. Please hold on a bit longer.',...
+        'Kindly wait for a moment as I am still dealing with a previous command. Thank you for understanding.'};
+        complete = {'Finished! I am ready for the next command.',...
+        'Task completed, I am open for another instruction.',...
+        'All done, now I am prepared to receive a new task.',...
+        'Job is finished, I can take on a new command now.',...
+        'Mission accomplished, I am ready for further instructions.',...
+        'Work completed, I am available for the next task.',...
+        'I have finished the task and am ready for a new directive.',...
+        'I am done with the previous command and ready for the next one.',...
+        'Task is complete. I am now ready for your next instruction.',...
+        'I have completed the task and am prepared for new orders.',...
+        'I have finished up and am ready to take on a new task.',...
+        'I am free now and open for the next instruction.',...
+        'I have wrapped up the previous task and am prepared for the next one.',...
+        'My schedule is clear now, ready for another command.',...
+        'I have completed my last task and am ready to start a new one.',...
+        'Done with the last instruction, now ready for the next.',...
+        'Previous task accomplished, I am now free for the next instruction.',...
+        'That is done, I am now available for the next command.',...
+        'I have cleared my task list and am ready for your next instruction.',...
+        'Previous command executed, now ready for your next directive.'};
+
+        nosee = {'Apologies, but I am unable to spot that object. Could you try repositioning me?',...
+        'I am sorry, but I can not detect the object you are referring to. Try adjusting my location.',...
+        'Regrettably, I cannot see the object in question. You might need to move me.',...
+        'I am having trouble locating that object. Perhaps moving me could help?',...
+        'Sorry, but I cannot find the object you mentioned. You might need to shift my position.',...
+        'Unfortunately, the object is not within my field of view. Could you try moving me?',...
+        'I cannot seem to locate the object. Would you mind moving me around a bit?',...
+        'Pardon me, but I cannot spot that object. Adjusting my position might help.',...
+        'Regrettably, I am not able to see the object. It may help if you could move me around.',...
+        'Apologies, I am not detecting the object. Try changing my position.'};
+
+        multiple = {'Multiple options exist. Is this the correct one?',...
+        'There is more than one option. Does this one match?',...
+        'Several options are available. Is this the one you are referring to?',...
+        'I found more than one. Does this one look right?',...
+        'Multiple possibilities are present. Is this one appropriate?',...
+        'There are multiple choices. Is this the one you meant?',...
+        'I see more than one option. Is this the one you are looking for?',...
+        'Several choices exist. Does this one fit?',...
+        'I have found several options. Is this the one you intended?',...
+        'There is a multitude of possibilities. Is this the one?',...
+        'There are several options here. Is this your selection?',...
+        'I have located multiple possibilities. Does this one align?',...
+        'More than one item has been found. Is this it?',...
+        'There is an array of options. Is this the right one?',...
+        'Multiple selections are visible. Is this the one you are seeking?',...
+        'I see more than one possibility. Does this one correspond?',...
+        'There are various options available. Is this one correct?',...
+        'Several possibilities have surfaced. Is this one accurate?',...
+        'More than one option has been detected. Is this the right one?',...
+        'There are a few options here. Is this the intended one?'};
+    
+        noinst = {'I am sorry, but I did not understand your command.',...
+        'Apologies, your instruction was not clear to me.',...
+        'Regrettably, I could not grasp your instruction.',...
+        'Pardon me, but I did not comprehend your command.',...
+        'Sorry, but I did not catch your instruction.',...
+        'I am afraid I did not understand your direction, my apologies.',...
+        'I could not quite get your command, I apologize.',...
+        'Unfortunately, your instruction did not come across clearly to me.',...
+        'My apologies, but I was unable to follow your command.',...
+        'I regret to inform you that your instruction was not understood.',...
+        'Sorry, I did not quite understand your instruction.',...
+        'I regret that your command was not clear to me.',...
+        'Apologies, but your instruction was a bit unclear.',...
+        'I am sorry, I failed to comprehend your command.',...
+        'I am afraid your command did not register with me, apologies.',...
+        'Sorry, I did not fully grasp the instruction you gave.',...
+        'Unfortunately, I was not able to decipher your command. My apologies.',...
+        'My apologies, but your instruction did not resonate with me.',...
+        'I am sorry, but I could not make sense of your command.',...
+        'Apologies, but I failed to catch your instruction.'};
+
+    dict = dictionary(["busy","complete", "nosee","multiple", "noinst"], [busy, complete, nosee, multiple, noinst]);
+    end
+    val = dict(type);
+    size_ = size(type);
+    send_log(val{randi([0,size_(2)],1,1)});
+end
+
+function log_count(x)
+    persistent template
+    if isempty(template)
+        template = {'I observe that the count is x.',...
+        'I note that there are x present.',...
+        'I perceive that the total is x.',...
+        'My observation indicates that there are x.',...
+        'I can see that the count is x.',...
+        'I notice that the total number is x.',...
+        'My view shows me that there are x.',...
+        'I am able to discern x.',...
+        'From my perspective, I see that there are x.',...
+        'It appears to me that the count is x.', ...
+        'From my vantage point, the total is x.',...
+        'I am picking up a count of x.',...
+        'My estimate based on observation is x.',...
+        'I am recognizing a total of x.',...
+        'I am registering a count of x.',...
+        'I have noticed that the total amounts to x.',...
+        'My tally suggests that there are x.',...
+        'From what I can see, there are x.',...
+        'According to my view, the number stands at x.',...
+        'Based on my perception, I would say there are x.'};
+    end
+    size_ = size(template);
+    sentence = template{randi([0,size_(2)],1,1)};
+    sentence = strrep(sentence, 'x', num2str(x));
+    if size_(2) == 1
+        sentence = strrep(sentence, 'are', "is");
+    end
+    send_log(sentence);
 end
