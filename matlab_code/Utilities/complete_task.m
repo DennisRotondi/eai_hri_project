@@ -1,5 +1,5 @@
 function complete_task(type,position,task)
-    global types positions z_dirs approach_orientations home cloud_pouches scale_pos
+    global types positions z_dirs home cloud_pouches scale_pos
     if type == "pouch"
         z_approach = [0 0 0.1 0 0 0];
         ctrs_good = [    0.6217   -0.1294   -0.0816;
@@ -38,7 +38,7 @@ function complete_task(type,position,task)
     end
     idx = find_nearest(positions, position,type);
     disp(idx);
-    pickObject(types(idx), positions(idx,:),z_dirs(idx),approach_orientations(idx,:))
+    pickObject(types(idx), positions(idx,:),z_dirs(idx))
     throwAway(types(idx))
     moveTo(home)
 end

@@ -154,6 +154,7 @@ function text_speech_call(obj, msg, vararg)
     else
         log_random_answer("noinst");
     end
+    send_picture(take_picture);
     status = "available";
 end
 
